@@ -1,0 +1,47 @@
+name: Publish Container Image
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      registry:
+        required: false
+        type: string
+        default: arkitema.azurecr.io
+      name:
+        required: true
+        type: string
+
+    secrets:
+      username:
+        required: true
+      password:
+        required: true
+
+jobs:
+  build-image:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log into registry ${{ inputs.registry }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+
+      - name: Build Image
+        run: |
+          docker build \
+            --build-arg BUILD_STAGE=PROD \
+            --build-arg BUILD_VERSION=${{ inputs.tag }} \
+            -t ${{ inputs.registry }}/${{ inputs.name }}:${{ inputs.tag }} .
+
+      - name: Push Image
+        if: github.event_name != 'pull_request'
+        run: docker push ${{ inputs.registry }}/${{ inputs.name }}:${{ inputs.tag }}
