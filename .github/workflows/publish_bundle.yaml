@@ -1,0 +1,46 @@
+name: Publish Frontend Bundle
+
+on:
+  workflow_call:
+    inputs:
+      azure_container_name:
+        required: true
+        type: string
+      azure_storage_account:
+        required: true
+        type: string
+      frontend_name:
+        required: true
+        type: string
+
+    secrets:
+      azure_storage_credentials:
+        required: true
+
+jobs:
+  publish:
+    name: Upload to Azure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.frontend_name }}
+
+      - name: Upload to blob storage
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+              --sas-token ${{ secrets.azure_storage_credentials }} \
+              --account-name ${{ inputs.azure_storage_account }} \
+              --source ${{ inputs.azure_container_name }} \
+              --pattern "bundles/${{ inputs.frontend_name }}/main/*"
+          
+            az storage blob upload-batch \
+              --sas-token ${{ secrets.azure_storage_credentials }} \
+              --account-name ${{ inputs.azure_storage_account }} \
+              --auth-mode key \
+              -d ${{ inputs.azure_container_name }} \
+              --destination-path "bundles/${{ inputs.frontend_name }}/main" \
+              -s .
