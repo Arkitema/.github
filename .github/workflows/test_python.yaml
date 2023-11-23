@@ -7,6 +7,10 @@ on:
         required: false
         type: string
         default: "3.11"
+      check:
+        required: false
+        type: string
+        default: "black"
 
 jobs:
   test:
@@ -26,10 +30,20 @@ jobs:
           pipenv sync --dev
 
       - name: Check Formatting
+        if: inputs.check == "black"
         run: pipenv run black . --check
 
       - name: Check ISort
+        if: inputs.check == "black"
         run: pipenv run isort . --check
 
+      - name: Check Formatting
+        if: inputs.check == "ruff"
+        run: pipenv run ruff format .
+
+      - name: Check Lint
+        if: inputs.check == "ruff"
+        run: pipenv run ruff lint .
+        
       - name: Run PyTest
         run:  pipenv run pytest
