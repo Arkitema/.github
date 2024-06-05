@@ -1,0 +1,47 @@
+on:
+  workflow_call:
+    inputs:
+      artifact_name:
+        required: false
+        type: string
+        default: "lcacollect-app"
+      storage_account:
+        required: true
+        type: string
+      container_name:
+        required: true
+        type: string
+    secrets:
+      azure_credentials:
+        required: true
+
+jobs:
+  publish-app:
+    name: Publish App
+    runs-on: ubuntu-latest
+    steps:
+        - name: Download artifact from build job
+          uses: actions/download-artifact@v3
+          with:
+            name: ${{ inputs.artifact_name }}
+            path: ./dist
+            
+        - name: Clean Container
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az storage blob delete-batch \
+                --sas-token ${{ secrets.azure_credentials }} \
+                --account-name ${{ inputs.storage_account }} \
+                --source ${{ inputs.container_name }} \
+                --pattern "*"
+        - name: Upload to Azure
+          uses: azure/CLI@v1
+          with:
+            inlineScript: |
+              az storage blob upload-batch \
+                --sas-token ${{ secrets.azure_credentials }} \
+                --account-name ${{ inputs.storage_account }} \
+                --auth-mode key -d ${{ inputs.container_name }} \
+                --destination-path "/" \
+                -s ./dist

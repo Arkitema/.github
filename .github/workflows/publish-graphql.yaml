@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      storage_account:
+        required: true
+        type: string
+      container_name:
+        required: true
+        type: string
+    secrets:
+      azure_credentials:
+        required: true
+
+jobs:
+  publish-schema:
+    name: Publish GraphQL Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Upload to Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+              --sas-token ${{ secrets.azure_credentials }} \
+              --account-name ${{ inputs.storage_account }} \
+              --source ${{ inputs.container_name }} \
+              --pattern "${{ inputs.name }}/${{ inputs.branch }}/*"
+            az storage blob upload-batch \
+              --sas-token ${{ secrets.azure_credentials }} \
+              --account-name ${{ inputs.storage_account }} \
+              --auth-mode key -d ${{ inputs.container_name }} \
+              --destination-path "${{ inputs.name }}/${{ inputs.branch }}" -s graphql/
