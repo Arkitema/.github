@@ -7,7 +7,7 @@ on:
       node_version:
         required: false
         type: string
-        default: "18.x"
+        default: "20.x"
     secrets:
       npm_token:
         required: true
@@ -32,4 +32,4 @@ jobs:
       
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+          NPM_TOKEN: ${{ secrets.npm_token }}

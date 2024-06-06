@@ -8,7 +8,7 @@ on:
       node_version:
         required: false
         type: string
-        default: "18.x"
+        default: "20.x"
       router_url:
         required: true
         type: string
