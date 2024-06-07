@@ -17,10 +17,10 @@ jobs:
     name: Publish NPM Package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download Artifact from Build Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact_name }}
           path: ./dist
@@ -30,9 +30,7 @@ jobs:
           node-version: ${{ inputs.node_version }}
           registry-url: https://registry.npmjs.org/
           scope: '@lca-platform'
-          always-auth: true
-          token: ${{ secrets.npm_token }}
       
       - run: npm publish
         env:
-          NPM_TOKEN: ${{ secrets.npm_token }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
