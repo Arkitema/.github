@@ -25,10 +25,13 @@ jobs:
           name: ${{ inputs.artifact_name }}
           path: ./dist
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node_version }}
           registry-url: https://registry.npmjs.org/
+          scope: '@lca_platform'
+          always-auth: true
+          token: ${{ secrets.npm_token }}
       
       - run: npm publish
         env:
