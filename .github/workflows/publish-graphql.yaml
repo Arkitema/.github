@@ -14,7 +14,7 @@ on:
         required: true
         type: string
     secrets:
-      azure_credentials:
+      azure_storage_credentials:
         required: true
 
 jobs:
@@ -29,12 +29,12 @@ jobs:
         with:
           inlineScript: |
             az storage blob delete-batch \
-              --sas-token ${{ secrets.azure_credentials }} \
+              --sas-token ${{ secrets.azure_storage_credentials }} \
               --account-name ${{ inputs.storage_account }} \
               --source ${{ inputs.container_name }} \
               --pattern "${{ inputs.name }}/${{ inputs.branch }}/*"
             az storage blob upload-batch \
-              --sas-token ${{ secrets.azure_credentials }} \
+              --sas-token ${{ secrets.azure_storage_credentials }} \
               --account-name ${{ inputs.storage_account }} \
               --auth-mode key -d ${{ inputs.container_name }} \
               --destination-path "${{ inputs.name }}/${{ inputs.branch }}" -s graphql/
