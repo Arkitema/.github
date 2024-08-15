@@ -1,0 +1,49 @@
+name: Test Python
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        required: false
+        type: string
+        default: "3.11"
+      check:
+        required: false
+        type: string
+        default: "black"
+
+jobs:
+  test:
+    name: Test Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python_version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install poetry
+          poetry install
+
+      - name: Check Formatting
+        if: ${{ inputs.check == 'black' }}
+        run: poetry run black . --check
+
+      - name: Check ISort
+        if: ${{ inputs.check == 'black' }}
+        run: poetry run isort . --check
+
+      - name: Check Formatting
+        if: ${{ inputs.check == 'ruff' }}
+        run: poetry run ruff format .
+
+      - name: Check Lint
+        if: ${{ inputs.check == 'ruff' }}
+        run: poetry run ruff lint .
+        
+      - name: Run PyTest
+        run:  poetry run pytest
