@@ -43,7 +43,11 @@ jobs:
 
       - name: Check Lint
         if: ${{ inputs.check == 'ruff' }}
-        run: poetry run ruff lint .
+        run: poetry run ruff check .
+      
+      - name: Check Typing
+        if: ${{ inputs.check == 'ruff' }}
+        run: poetry run mypy .
         
       - name: Run PyTest
         run:  poetry run pytest
